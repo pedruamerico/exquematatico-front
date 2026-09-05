@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IxquemaTatico - Editor</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topo">
+    <h1><a href="index.html">IxquemaTatico</a> <span id="titulo-esquema"></span></h1>
+    <div class="topo-acoes">
+      <span id="dirty" class="dirty"></span>
+      <a class="btn" href="index.html">Voltar à biblioteca</a>
+    </div>
+  </header>
+
+  <main class="conteudo">
+    <p id="estado" class="estado">Carregando...</p>
+
+    <div id="editor" class="editor" hidden>
+      <div class="campo-wrap">
+        <div id="campo" class="campo">
+          <div class="linha meio"></div>
+          <div class="linha circulo"></div>
+          <div class="linha grande-area topo-area"></div>
+          <div class="linha pequena-area topo-area"></div>
+          <div class="linha penalti penalti-topo"></div>
+          <div class="linha grande-area base-area"></div>
+          <div class="linha pequena-area base-area"></div>
+          <div class="linha penalti penalti-base"></div>
+        </div>
+      </div>
+
+      <form id="form" class="painel">
+        <label>Nome
+          <input id="nome" name="nome" required maxlength="80">
+        </label>
+        <label>Formação
+          <input id="formacao" name="formacao" required maxlength="20" placeholder="4-3-3">
+        </label>
+        <label>Tipo
+          <select id="tipo" name="tipo">
+            <option value="ofensivo">Ofensivo</option>
+            <option value="defensivo">Defensivo</option>
+            <option value="bola_parada">Bola parada</option>
+          </select>
+        </label>
+        <label>Anotações
+          <textarea id="anotacoes" name="anotacoes"></textarea>
+        </label>
+
+        <h2>Papel de cada ficha</h2>
+        <div id="papeis" class="papeis"></div>
+
+        <div class="painel-acoes">
+          <button id="salvar" class="btn btn-primario" type="submit">Salvar</button>
+        </div>
+        <p id="mensagem" class="mensagem"></p>
+      </form>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/editor.js"></script>
+</body>
+</html>
