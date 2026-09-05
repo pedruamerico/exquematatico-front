@@ -11,6 +11,7 @@
     .campo {
       position: relative;
       aspect-ratio: 68 / 105;
+      flex-shrink: 0; /* sem isso o log crescendo encolhe o campo durante o arrasto */
       width: min(100%, calc(90vh * 68 / 105));
       background: #2e7d32;
       border: 2px solid #fff;
