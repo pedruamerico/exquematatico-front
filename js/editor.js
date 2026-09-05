@@ -7,6 +7,9 @@ const campoEl = document.getElementById("campo");
 const papeisEl = document.getElementById("papeis");
 const tituloEl = document.getElementById("titulo-esquema");
 const form = document.getElementById("form");
+const dirtyEl = document.getElementById("dirty");
+const mensagemEl = document.getElementById("mensagem");
+const salvarBtn = document.getElementById("salvar");
 
 // Esquema inicial de um quadro novo: 4-4-2, ataque para cima (y menor = mais perto do gol adversário).
 const PADRAO_442 = [
@@ -25,6 +28,7 @@ const PADRAO_442 = [
 
 // Estado do quadro: as 11 posições em % do campo. É a fonte do payload de salvar.
 let posicoes = [];
+let dirty = false;
 
 function mostrarEstado(texto, classe) {
   estadoEl.textContent = texto;
@@ -33,9 +37,56 @@ function mostrarEstado(texto, classe) {
   editorEl.hidden = true;
 }
 
+function mostrarMensagem(texto, classe) {
+  mensagemEl.textContent = texto;
+  mensagemEl.className = "mensagem " + (classe || "");
+}
+
+function marcarDirty(valor) {
+  dirty = valor;
+  dirtyEl.textContent = dirty ? "Alterações não salvas" : "";
+}
+
 function posicionarFicha(ficha, pos) {
   ficha.style.left = pos.x + "%";
   ficha.style.top = pos.y + "%";
+}
+
+function clamp(v) {
+  return Math.min(100, Math.max(0, v));
+}
+
+// Converte o ponteiro para % do campo. Sem compensar o raio da ficha: nos extremos
+// metade dela fica para fora, e é isso que o quadro aceita.
+function moverFichaParaPonteiro(ficha, pos, ev) {
+  const r = campoEl.getBoundingClientRect();
+  pos.x = clamp(((ev.clientX - r.left) / r.width) * 100);
+  pos.y = clamp(((ev.clientY - r.top) / r.height) * 100);
+  posicionarFicha(ficha, pos);
+}
+
+function habilitarDrag(ficha, pos) {
+  let arrastando = false;
+  ficha.addEventListener("pointerdown", (ev) => {
+    arrastando = true;
+    ficha.classList.add("arrastando");
+    ficha.setPointerCapture(ev.pointerId);
+    ev.preventDefault();
+  });
+  ficha.addEventListener("pointermove", (ev) => {
+    if (!arrastando) return;
+    moverFichaParaPonteiro(ficha, pos, ev);
+    marcarDirty(true);
+  });
+  const soltar = (ev) => {
+    if (!arrastando) return;
+    arrastando = false;
+    ficha.classList.remove("arrastando");
+    moverFichaParaPonteiro(ficha, pos, ev);
+    marcarDirty(true);
+  };
+  ficha.addEventListener("pointerup", soltar);
+  ficha.addEventListener("pointercancel", soltar);
 }
 
 function renderizarFichas() {
@@ -48,6 +99,7 @@ function renderizarFichas() {
     ficha.innerHTML = `${pos.numero}<span class="papel"></span>`;
     ficha.querySelector(".papel").textContent = pos.papel;
     posicionarFicha(ficha, pos);
+    habilitarDrag(ficha, pos);
     campoEl.appendChild(ficha);
 
     const label = document.createElement("label");
@@ -57,8 +109,46 @@ function renderizarFichas() {
     input.addEventListener("input", () => {
       pos.papel = input.value;
       ficha.querySelector(".papel").textContent = pos.papel;
+      marcarDirty(true);
     });
     papeisEl.appendChild(label);
+  }
+}
+
+function montarPayload() {
+  return {
+    nome: form.nome.value.trim(),
+    formacao: form.formacao.value.trim(),
+    tipo: form.tipo.value,
+    anotacoes: form.anotacoes.value,
+    posicoes: posicoes.map((p) => ({
+      numero: p.numero,
+      papel: p.papel.trim(),
+      x: Number(p.x.toFixed(2)),
+      y: Number(p.y.toFixed(2)),
+    })),
+  };
+}
+
+async function salvar(ev) {
+  ev.preventDefault();
+  salvarBtn.disabled = true;
+  mostrarMensagem("Salvando...");
+  try {
+    const payload = montarPayload();
+    if (esquemaId) {
+      await api.atualizarEsquema(esquemaId, payload);
+      mostrarMensagem("Esquema salvo.", "sucesso");
+      await carregar();
+    } else {
+      // Esquema novo: após criar, a URL passa a ter o id e o editor recarrega da API.
+      const criado = await api.criarEsquema(payload);
+      location.replace("editor.html?id=" + criado.id);
+    }
+  } catch (e) {
+    mostrarMensagem(e.message, "erro");
+  } finally {
+    salvarBtn.disabled = false;
   }
 }
 
@@ -71,7 +161,7 @@ function preencherFormulario(esquema) {
 }
 
 async function carregar() {
-  mostrarEstado("Carregando...");
+  if (editorEl.hidden) mostrarEstado("Carregando...");
   try {
     let esquema;
     if (esquemaId) {
@@ -82,6 +172,7 @@ async function carregar() {
     posicoes = esquema.posicoes.map((p) => ({ ...p })).sort((a, b) => a.numero - b.numero);
     preencherFormulario(esquema);
     renderizarFichas();
+    marcarDirty(false);
     estadoEl.hidden = true;
     editorEl.hidden = false;
   } catch (e) {
@@ -89,4 +180,8 @@ async function carregar() {
   }
 }
 
+for (const campo of ["nome", "formacao", "tipo", "anotacoes"]) {
+  form[campo].addEventListener("input", () => marcarDirty(true));
+}
+form.addEventListener("submit", salvar);
 carregar();
