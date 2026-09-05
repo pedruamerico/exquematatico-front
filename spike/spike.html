@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spike IxquemaTatico - campo responsivo + ficha arrastavel</title>
+  <style>
+    body { margin: 0; background: #111; color: #eee; font-family: sans-serif; }
+    .wrap { display: flex; gap: 16px; padding: 16px; align-items: flex-start; }
+    /* Campo vertical 68x105, largura limitada pela altura da viewport */
+    .campo {
+      position: relative;
+      aspect-ratio: 68 / 105;
+      width: min(100%, calc(90vh * 68 / 105));
+      background: #2e7d32;
+      border: 2px solid #fff;
+      touch-action: none;
+      user-select: none;
+    }
+    .ficha {
+      position: absolute;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #e53935; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; cursor: grab;
+      transform: translate(-50%, -50%);
+    }
+    pre { flex: 1; background: #222; padding: 8px; min-height: 200px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="campo" id="campo">
+      <div class="ficha" id="ficha" style="left: 50%; top: 50%;">9</div>
+    </div>
+    <pre id="log"></pre>
+  </div>
+  <script>
+    const campo = document.getElementById('campo');
+    const ficha = document.getElementById('ficha');
+    const log = document.getElementById('log');
+    let arrastando = false;
+
+    function clamp(v) { return Math.min(100, Math.max(0, v)); }
+
+    function moverParaPonteiro(ev) {
+      const r = campo.getBoundingClientRect();
+      const x = clamp((ev.clientX - r.left) / r.width * 100);
+      const y = clamp((ev.clientY - r.top) / r.height * 100);
+      ficha.style.left = x + '%';
+      ficha.style.top = y + '%';
+      log.textContent = `x=${x.toFixed(2)}% y=${y.toFixed(2)}%\ncampo=${r.width.toFixed(0)}x${r.height.toFixed(0)}px\n` + log.textContent.split('\n').slice(2, 20).join('\n');
+    }
+
+    ficha.addEventListener('pointerdown', ev => {
+      arrastando = true;
+      ficha.setPointerCapture(ev.pointerId);
+      ev.preventDefault();
+    });
+    ficha.addEventListener('pointermove', ev => { if (arrastando) moverParaPonteiro(ev); });
+    ficha.addEventListener('pointerup', ev => {
+      if (!arrastando) return;
+      arrastando = false;
+      moverParaPonteiro(ev);
+    });
+    window.addEventListener('resize', () => {
+      const r = campo.getBoundingClientRect();
+      log.textContent = `resize: campo=${r.width.toFixed(0)}x${r.height.toFixed(0)}px (ficha em ${ficha.style.left}/${ficha.style.top})\n` + log.textContent;
+    });
+  </script>
+</body>
+</html>
