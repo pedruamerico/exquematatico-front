@@ -1,0 +1,213 @@
+:root {
+  --fundo: #14161a;
+  --painel: #1e2128;
+  --borda: #2f333c;
+  --texto: #e8e9ec;
+  --texto-suave: #9aa0ab;
+  --primaria: #3b82f6;
+  --perigo: #dc2626;
+  --campo: #2e8b45;
+  --campo-linha: rgba(255, 255, 255, 0.85);
+  --ficha: #e53935;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.4;
+}
+
+a { color: inherit; text-decoration: none; }
+
+h1 { font-size: 1.4rem; margin: 0; }
+h2 { font-size: 1.05rem; margin: 0; }
+
+/* Cabeçalho */
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  background: var(--painel);
+  border-bottom: 1px solid var(--borda);
+}
+.topo-acoes { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.filtro { display: flex; align-items: center; gap: 8px; color: var(--texto-suave); font-size: 0.9rem; }
+
+.conteudo { padding: 20px; max-width: 1200px; margin: 0 auto; }
+
+/* Controles */
+.btn {
+  display: inline-block;
+  padding: 7px 14px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: #2a2e37;
+  color: var(--texto);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.btn:hover { filter: brightness(1.15); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn-primario { background: var(--primaria); border-color: var(--primaria); color: #fff; }
+.btn-perigo { color: #fca5a5; border-color: #7f1d1d; }
+
+input, select, textarea {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: #13151a;
+  color: var(--texto);
+  font: inherit;
+  font-size: 0.9rem;
+}
+select { width: auto; }
+textarea { resize: vertical; min-height: 90px; }
+
+/* Estados */
+.estado { color: var(--texto-suave); padding: 24px; text-align: center; }
+.estado.erro { color: #fca5a5; }
+.estado.sucesso { color: #86efac; }
+
+/* Biblioteca */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--painel);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.card-cabecalho { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.card-formacao { margin: 0; }
+.card-data { margin: 0; color: var(--texto-suave); font-size: 0.85rem; }
+.card-acoes { display: flex; gap: 8px; margin-top: auto; padding-top: 8px; flex-wrap: wrap; }
+
+.badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  color: #fff;
+}
+.badge-ofensivo { background: #b91c1c; }
+.badge-defensivo { background: #1d4ed8; }
+.badge-bola_parada { background: #a16207; }
+
+/* Editor */
+.editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 800px) {
+  .editor { grid-template-columns: 1fr; }
+}
+
+.campo-wrap { display: flex; justify-content: center; }
+
+/* Campo vertical 68 x 105 (proporção oficial). A largura é limitada pela altura da viewport
+   para o campo inteiro caber na tela; flex-shrink 0 evita que o layout o encolha. */
+.campo {
+  position: relative;
+  flex-shrink: 0;
+  width: min(100%, calc(85vh * 68 / 105));
+  aspect-ratio: 68 / 105;
+  background: var(--campo);
+  background-image: repeating-linear-gradient(
+    to bottom, transparent 0 10%, rgba(0, 0, 0, 0.06) 10% 20%);
+  border: 2px solid var(--campo-linha);
+  border-radius: 4px;
+  touch-action: none;
+  user-select: none;
+  overflow: visible;
+}
+.campo .linha { position: absolute; border: 2px solid var(--campo-linha); }
+.campo .meio { left: 0; right: 0; top: 50%; border-width: 1px 0 0; }
+.campo .circulo {
+  left: 50%; top: 50%;
+  width: 26%; aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.campo .grande-area { left: 20%; width: 60%; height: 15.7%; }
+.campo .pequena-area { left: 36.5%; width: 27%; height: 5.2%; }
+.campo .topo-area { top: -2px; border-top: 0; }
+.campo .base-area { bottom: -2px; border-bottom: 0; }
+.campo .penalti {
+  left: 50%;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--campo-linha);
+  border: 0;
+  transform: translate(-50%, -50%);
+}
+.campo .penalti-topo { top: 10.5%; }
+.campo .penalti-base { top: 89.5%; }
+
+.ficha {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ficha);
+  color: #fff;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  cursor: grab;
+}
+.ficha.arrastando { cursor: grabbing; z-index: 2; }
+.ficha .papel {
+  position: absolute;
+  top: 100%;
+  margin-top: 3px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+
+.painel {
+  background: var(--painel);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.painel label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--texto-suave); }
+.painel label select { width: 100%; }
+.painel h2 { margin-top: 4px; }
+.papeis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 10px; }
+.papeis label { flex-direction: row; align-items: center; gap: 8px; }
+.papeis .num { width: 22px; text-align: right; font-weight: 700; color: var(--texto); }
+.painel-acoes { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.dirty { font-size: 0.85rem; color: #fbbf24; }
+.dirty:empty { display: none; }
+.mensagem { margin: 0; font-size: 0.85rem; min-height: 1.2em; }
+.mensagem.erro { color: #fca5a5; }
+.mensagem.sucesso { color: #86efac; }

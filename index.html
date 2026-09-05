@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IxquemaTatico - Biblioteca</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>IxquemaTatico</h1>
+    <div class="topo-acoes">
+      <label class="filtro">
+        Tipo
+        <select id="filtro-tipo">
+          <option value="">Todos</option>
+          <option value="ofensivo">Ofensivo</option>
+          <option value="defensivo">Defensivo</option>
+          <option value="bola_parada">Bola parada</option>
+        </select>
+      </label>
+      <a class="btn btn-primario" href="editor.html">Novo esquema</a>
+    </div>
+  </header>
+
+  <main class="conteudo">
+    <p id="estado" class="estado">Carregando...</p>
+    <section id="lista" class="cards" hidden></section>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>
