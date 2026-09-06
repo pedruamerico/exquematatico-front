@@ -39,24 +39,26 @@ das posições do quadro aberto.
 
 ## Execução
 
-Suba a API primeiro (ver README do `exquematatico-api`; ela roda em `http://localhost:5000`).
+Suba a API primeiro (ver README do `exquematatico-api`; ela roda em `http://localhost:5001`).
 Depois, nesta pasta:
 
 ```powershell
-python -m http.server 8000
+python -m http.server 8000      # Linux/macOS: python3 -m http.server 8000
 ```
 
 Abra `http://localhost:8000`. Qualquer servidor de arquivos estáticos serve; `python -m
-http.server` é só o mais à mão. Abrir o HTML direto do disco (`file://`) não funciona por
-causa do CORS.
+http.server` é só o mais à mão. Não há build nem dependência para instalar.
+
+Abrir `index.html` direto do disco (duplo clique) também funciona no Chrome e no Firefox,
+porque a API libera CORS para qualquer origem. Se o navegador bloquear, use o servidor acima.
 
 ## Configuração da API
 
 A base URL está no topo de `js/api.js`:
 
 ```js
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "http://localhost:5001";
 ```
 
 Altere se a API rodar em outra porta ou host. A documentação Swagger da API fica em
-`http://localhost:5000/openapi`.
+`http://localhost:5001/openapi`.

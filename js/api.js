@@ -1,5 +1,5 @@
 // Único ponto de acesso à API. Ajuste a URL abaixo se a API rodar em outra porta/host.
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "http://localhost:5001";
 
 async function requisitar(caminho, opcoes = {}) {
   let resposta;
