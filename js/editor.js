@@ -103,7 +103,7 @@ function renderizarFichas() {
     campoEl.appendChild(ficha);
 
     const label = document.createElement("label");
-    label.innerHTML = `<span class="num">${pos.numero}</span><input maxlength="12" required>`;
+    label.innerHTML = `<span class="num">${pos.numero}</span><input required>`;
     const input = label.querySelector("input");
     input.value = pos.papel;
     input.addEventListener("input", () => {
@@ -124,8 +124,8 @@ function montarPayload() {
     posicoes: posicoes.map((p) => ({
       numero: p.numero,
       papel: p.papel.trim(),
-      x: Number(p.x.toFixed(2)),
-      y: Number(p.y.toFixed(2)),
+      x: p.x,
+      y: p.y,
     })),
   };
 }
@@ -167,6 +167,7 @@ async function carregar() {
     if (esquemaId) {
       esquema = await api.obterEsquema(esquemaId);
     } else {
+      // DECISÃO: a spec fixa só as posições do esquema novo; formação "4-4-2" e tipo "ofensivo" são os defaults mais simples.
       esquema = { nome: "", formacao: "4-4-2", tipo: "ofensivo", anotacoes: "", posicoes: PADRAO_442 };
     }
     posicoes = esquema.posicoes.map((p) => ({ ...p })).sort((a, b) => a.numero - b.numero);
