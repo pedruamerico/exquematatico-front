@@ -1,4 +1,4 @@
-// Único ponto de acesso à API. Ajuste a URL abaixo se a API rodar em outra porta/host.
+// Ajuste a URL se a API rodar em outra porta ou host.
 const API_BASE_URL = "http://localhost:5001";
 
 async function requisitar(caminho, opcoes = {}) {
@@ -25,4 +25,11 @@ const api = {
   atualizarEsquema: (id, dados) => requisitar("/esquemas/" + id, comJson("PUT", dados)),
   excluirEsquema: (id) => requisitar("/esquemas/" + id, { method: "DELETE" }),
   duplicarEsquema: (id) => requisitar("/esquemas/" + id + "/duplicar", { method: "POST" }),
+
+  criarVariacao: (esquemaId, dados) =>
+    requisitar("/esquemas/" + esquemaId + "/variacoes", comJson("POST", dados)),
+  atualizarVariacao: (esquemaId, variacaoId, dados) =>
+    requisitar("/esquemas/" + esquemaId + "/variacoes/" + variacaoId, comJson("PUT", dados)),
+  excluirVariacao: (esquemaId, variacaoId) =>
+    requisitar("/esquemas/" + esquemaId + "/variacoes/" + variacaoId, { method: "DELETE" }),
 };

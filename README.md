@@ -1,8 +1,8 @@
 # ExquemaTatico Front
 
-Frontend do ExquemaTatico, um quadro tático de futebol digital. O usuário monta esquemas
-(formação, jogada, bola parada), posiciona 11 jogadores num campo arrastando as fichas,
-anota e salva numa biblioteca pessoal.
+Frontend do ExquemaTatico, um quadro tático de futebol digital. O quadro é a tela: os
+esquemas ficam numa lista à esquerda e, ao selecionar um, ele expande nas suas variações.
+Clicar numa variação reposiciona os 22 jogadores no campo.
 
 A API fica em outro repositório: `exquematatico-api`.
 
@@ -13,29 +13,40 @@ A API fica em outro repositório: `exquematatico-api`.
 HTML, CSS e JavaScript puros, servidos como arquivos estáticos. Sem frameworks, sem
 bibliotecas, sem build.
 
-- `index.html` + `js/index.js`: biblioteca. Lista os esquemas em cards (nome, formação, tipo,
-  data), filtra por tipo e oferece Abrir, Duplicar e Excluir (com confirmação).
-- `editor.html` + `js/editor.js`: o quadro. Campo vertical na proporção 68 x 105 desenhado
-  em CSS, 11 fichas arrastáveis via Pointer Events e formulário lateral (nome, formação,
-  tipo, anotações e papel de cada ficha). Sem `?id=` na URL abre um esquema novo em 4-4-2;
-  com `?id=` carrega o esquema da API. Salvar faz POST (novo) ou PUT (existente). O texto
-  "Alterações não salvas" aparece ao arrastar uma ficha ou alterar qualquer campo e some ao
-  carregar ou salvar.
+- `index.html` + `js/app.js`: a tela inteira. Lista de esquemas à esquerda, quadro ao centro,
+  banco e edição do jogador selecionado à direita.
 - `js/api.js`: todas as chamadas `fetch` à API, com a base URL numa constante.
-- `styles.css`: tema escuro, campo verde.
+- `styles.css`: tema escuro, campo verde, time da casa em vermelho e adversário em azul.
 - `spike/spike.html`: prova de conceito inicial do campo responsivo com uma ficha, usada para
-  validar a conversão de coordenadas antes do editor.
+  validar a conversão de coordenadas antes do quadro.
 
-### Coordenadas
+### Variações
 
-Cada ficha é posicionada com `left: X%; top: Y%; transform: translate(-50%, -50%)`, onde X e Y
-são a posição percentual do centro da ficha em relação ao campo. Ao arrastar, o ponteiro é
-convertido com `(pointerX - campo.left) / campo.width * 100` (idem para Y) e limitado a 0-100.
-Como tudo é percentual, o esquema mantém as posições proporcionais em qualquer tamanho de
-tela.
+Todo esquema tem Padrão, Ofensivo e Defensivo, criadas pela API a partir da formação, mais as
+personalizadas que o usuário adicionar em "+ Variação". Trocar de variação não recarrega nada
+da API: a lista já vem completa no `GET /esquemas`.
 
-Após cada POST, PUT ou DELETE a página recarrega os dados da API; não há estado local além
-das posições do quadro aberto.
+As três fixas não podem ser excluídas. As personalizadas têm um × ao lado do nome.
+
+### Quadro
+
+Campo vertical na proporção 68 x 105 desenhado em CSS. As fichas são arrastáveis via Pointer
+Events. Cada ficha é posicionada com `left: X%; top: Y%; transform: translate(-50%, -50%)`,
+onde X e Y são a posição percentual do centro da ficha em relação ao campo. Ao arrastar, o
+ponteiro é convertido com `(pointerX - campo.left) / campo.width * 100` (idem para Y) e
+limitado a 0-100. Como tudo é percentual, o esquema mantém as posições proporcionais em
+qualquer tamanho de tela.
+
+### Elenco
+
+Clicar numa ficha a seleciona e abre os campos de número e papel no painel. Dali o jogador
+pode ir ao banco ou ser excluído de vez. O banco de cada time fica no painel; a seta coloca
+o jogador de volta em campo, e "Adicionar jogador" cria um novo com o primeiro número livre.
+
+O limite é de 11 em campo por time. É possível salvar com menos, para montar aos poucos.
+
+O texto "Alterações não salvas" aparece ao arrastar uma ficha ou mexer no elenco, e some ao
+salvar. Trocar de variação ou de esquema com alterações pendentes pede confirmação.
 
 ## Execução
 

@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ExquemaTatico - Biblioteca</title>
+  <title>ExquemaTatico</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="topo">
     <h1>ExquemaTatico</h1>
     <div class="topo-acoes">
+      <span id="dirty" class="dirty"></span>
       <label class="filtro">
         Tipo
         <select id="filtro-tipo">
@@ -19,16 +20,127 @@
           <option value="bola_parada">Bola parada</option>
         </select>
       </label>
-      <a class="btn btn-primario" href="editor.html">Novo esquema</a>
+      <button id="novo" class="btn btn-primario" type="button">Novo esquema</button>
     </div>
   </header>
 
-  <main class="conteudo">
-    <p id="estado" class="estado">Carregando...</p>
-    <section id="lista" class="cards" hidden></section>
+  <main class="app">
+    <aside class="lateral">
+      <p id="estado-lista" class="estado">Carregando...</p>
+      <nav id="lista" class="lista" hidden></nav>
+    </aside>
+
+    <section class="palco">
+      <p id="estado-board" class="estado">Selecione um esquema à esquerda.</p>
+
+      <div id="board" class="board" hidden>
+        <div class="board-cabecalho">
+          <div>
+            <h2 id="board-titulo"></h2>
+            <p id="board-subtitulo" class="board-subtitulo"></p>
+          </div>
+          <div class="board-acoes">
+            <button id="salvar" class="btn btn-primario" type="button">Salvar</button>
+            <button id="editar-dados" class="btn" type="button">Editar dados</button>
+            <button id="duplicar" class="btn" type="button">Duplicar</button>
+            <button id="excluir" class="btn btn-perigo" type="button">Excluir</button>
+          </div>
+        </div>
+
+        <div class="board-corpo">
+          <div class="campo-wrap">
+            <div id="campo" class="campo">
+              <div class="linha meio"></div>
+              <div class="linha circulo"></div>
+              <div class="linha grande-area topo-area"></div>
+              <div class="linha pequena-area topo-area"></div>
+              <div class="linha penalti penalti-topo"></div>
+              <div class="linha grande-area base-area"></div>
+              <div class="linha pequena-area base-area"></div>
+              <div class="linha penalti penalti-base"></div>
+            </div>
+          </div>
+
+          <div class="painel">
+            <section class="banco">
+              <h3>Banco <span class="time-cor time-casa"></span> Casa</h3>
+              <div id="banco-casa" class="banco-fichas"></div>
+              <button class="btn btn-mini" type="button" data-adicionar="casa">Adicionar jogador</button>
+            </section>
+
+            <section class="banco">
+              <h3>Banco <span class="time-cor time-visitante"></span> Adversário</h3>
+              <div id="banco-visitante" class="banco-fichas"></div>
+              <button class="btn btn-mini" type="button" data-adicionar="visitante">Adicionar jogador</button>
+            </section>
+
+            <section class="selecao" id="selecao" hidden>
+              <h3>Jogador selecionado</h3>
+              <div class="selecao-campos">
+                <label>Número
+                  <input id="sel-numero" type="number" min="1" max="99">
+                </label>
+                <label>Papel
+                  <input id="sel-papel" maxlength="12">
+                </label>
+              </div>
+              <div class="selecao-acoes">
+                <button id="sel-banco" class="btn btn-mini" type="button">Mandar ao banco</button>
+                <button id="sel-remover" class="btn btn-mini btn-perigo" type="button">Excluir</button>
+              </div>
+            </section>
+
+            <p id="mensagem" class="mensagem"></p>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
+  <dialog id="dialogo" class="dialogo">
+    <form id="form-esquema" method="dialog">
+      <h2 id="dialogo-titulo">Novo esquema</h2>
+      <label>Nome
+        <input id="dlg-nome" required>
+      </label>
+      <label>Formação
+        <input id="dlg-formacao" required placeholder="4-3-3">
+        <small>Soma 10 jogadores de linha. O goleiro não entra na conta.</small>
+      </label>
+      <label>Tipo
+        <select id="dlg-tipo">
+          <option value="ofensivo">Ofensivo</option>
+          <option value="defensivo">Defensivo</option>
+          <option value="bola_parada">Bola parada</option>
+        </select>
+      </label>
+      <label>Anotações
+        <textarea id="dlg-anotacoes"></textarea>
+      </label>
+      <p id="dlg-erro" class="mensagem erro"></p>
+      <div class="dialogo-acoes">
+        <button class="btn" type="button" data-fechar>Cancelar</button>
+        <button class="btn btn-primario" type="submit">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dialogo-variacao" class="dialogo">
+    <form id="form-variacao" method="dialog">
+      <h2>Nova variação</h2>
+      <label>Nome
+        <input id="var-nome" required placeholder="Saída de bola">
+        <small>Começa como cópia do Padrão. Reposicione e salve.</small>
+      </label>
+      <p id="var-erro" class="mensagem erro"></p>
+      <div class="dialogo-acoes">
+        <button class="btn" type="button" data-fechar>Cancelar</button>
+        <button class="btn btn-primario" type="submit">Criar</button>
+      </div>
+    </form>
+  </dialog>
+
   <script src="js/api.js"></script>
-  <script src="js/index.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
