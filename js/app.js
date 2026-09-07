@@ -372,6 +372,29 @@ async function carregar() {
   renderizarBoard();
 }
 
+async function recarregarEsquema() {
+  if (!estado.esquemaId) return;
+  if (estado.sujo && !confirm("Há alterações não salvas. Descartar e buscar do servidor?")) return;
+  try {
+    // Busca só o esquema aberto, em vez da lista inteira: o quadro volta ao que está salvo
+    // sem depender da cópia que veio na última listagem.
+    const atual = await api.obterEsquema(estado.esquemaId);
+    const indice = estado.esquemas.findIndex((e) => e.id === atual.id);
+    if (indice >= 0) estado.esquemas[indice] = atual;
+
+    const variacao = atual.variacoes.find((v) => v.id === estado.variacaoId) || atual.variacoes[0];
+    estado.variacaoId = variacao ? variacao.id : null;
+    estado.variacao = variacao ? clonarVariacao(variacao) : null;
+    estado.selecionado = null;
+    marcarSujo(false);
+    renderizarLista();
+    renderizarBoard();
+    mostrarMensagem("Esquema recarregado do servidor.", "sucesso");
+  } catch (e) {
+    mostrarMensagem(e.message, "erro");
+  }
+}
+
 async function salvarVariacao() {
   if (!estado.variacao) return;
   await executar(
@@ -450,6 +473,7 @@ document.querySelectorAll("[data-fechar]").forEach((b) =>
 el("novo").addEventListener("click", () => abrirDialogoEsquema(null));
 el("editar-dados").addEventListener("click", () => abrirDialogoEsquema(esquemaAtual()));
 el("salvar").addEventListener("click", salvarVariacao);
+el("recarregar").addEventListener("click", recarregarEsquema);
 
 el("duplicar").addEventListener("click", () =>
   executar(async () => {
