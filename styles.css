@@ -70,6 +70,8 @@ h3 { font-size: 0.85rem; margin: 0 0 6px; color: var(--texto-suave); font-weight
 }
 .btn:hover { filter: brightness(1.15); }
 .btn:disabled { opacity: 0.5; cursor: default; }
+body.ocupado { cursor: progress; }
+body.ocupado .btn { pointer-events: none; opacity: 0.6; }
 .btn-primario { background: var(--primaria); border-color: var(--primaria); color: #fff; }
 .btn-perigo { color: #fca5a5; border-color: #7f1d1d; }
 .btn-mini { padding: 4px 10px; font-size: 0.8rem; }

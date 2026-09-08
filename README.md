@@ -46,7 +46,15 @@ o jogador de volta em campo, e "Adicionar jogador" cria um novo com o primeiro n
 O limite é de 11 em campo por time. É possível salvar com menos, para montar aos poucos.
 
 O texto "Alterações não salvas" aparece ao arrastar uma ficha ou mexer no elenco, e some ao
-salvar. Trocar de variação ou de esquema com alterações pendentes pede confirmação.
+salvar. Trocar de variação ou de esquema com alterações pendentes pede confirmação, e o mesmo
+vale para o filtro de tipo, para criar variação e para excluir outra variação. Cancelar
+qualquer um desses devolve a tela ao estado anterior, com as alterações intactas.
+
+Trocar a formação no "Editar dados" avisa antes: a API regenera as variações a partir da
+formação nova, então o posicionamento atual é substituído.
+
+Enquanto uma ação fala com a API os botões ficam bloqueados, para um clique repetido não
+disparar a mesma requisição duas vezes.
 
 ## Execução
 

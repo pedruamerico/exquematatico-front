@@ -73,6 +73,7 @@ function criarItemLista(esquema) {
         excluir.title = "Excluir variação";
         excluir.addEventListener("click", async (ev) => {
           ev.stopPropagation();
+          if (v.id !== estado.variacaoId && !confirmarDescarte()) return;
           if (!confirm(`Excluir a variação "${v.nome}"?`)) return;
           await executar(() => api.excluirVariacao(esquema.id, v.id));
         });
@@ -335,18 +336,28 @@ function removerJogador(time, numero) {
   renderizarBoard();
 }
 
-async function executar(acao, aoTerminar) {
+let ocupado = false;
+
+// Trava as ações que falam com a API: sem isso, clicar duas vezes em Excluir ou Duplicar
+// dispara duas requisições, e a segunda opera sobre um estado que a primeira já mudou.
+async function executar(acao, aoTerminar, preservarSujo = false) {
+  if (ocupado) return;
+  ocupado = true;
+  document.body.classList.add("ocupado");
   try {
     mostrarMensagem("");
     await acao();
-    await carregar();
+    await carregar(preservarSujo);
     if (aoTerminar) aoTerminar();
   } catch (e) {
     mostrarMensagem(e.message, "erro");
+  } finally {
+    ocupado = false;
+    document.body.classList.remove("ocupado");
   }
 }
 
-async function carregar() {
+async function carregar(preservarSujo = false) {
   try {
     estado.esquemas = await api.listarEsquemas(filtroEl.value);
   } catch (e) {
@@ -365,9 +376,15 @@ async function carregar() {
   const variacao = esquema
     ? esquema.variacoes.find((v) => v.id === estado.variacaoId) || esquema.variacoes[0]
     : null;
+  const mesmaVariacao = variacao && variacao.id === estado.variacaoId;
+
   estado.variacaoId = variacao ? variacao.id : null;
-  estado.variacao = variacao ? clonarVariacao(variacao) : null;
-  marcarSujo(false);
+  // A cópia de trabalho suja é preservada quando a variação aberta continua sendo a mesma:
+  // recarregar a lista por causa de outra ação não pode engolir o que ainda não foi salvo.
+  if (!(preservarSujo && mesmaVariacao && estado.sujo)) {
+    estado.variacao = variacao ? clonarVariacao(variacao) : null;
+    marcarSujo(false);
+  }
   renderizarLista();
   renderizarBoard();
 }
@@ -425,6 +442,8 @@ function abrirDialogoEsquema(esquema) {
 }
 
 function abrirDialogoVariacao() {
+  // A variação nova passa a ser a aberta, descartando a cópia de trabalho atual.
+  if (!confirmarDescarte()) return;
   el("var-nome").value = "";
   el("var-erro").textContent = "";
   dialogoVariacao.showModal();
@@ -438,6 +457,14 @@ el("form-esquema").addEventListener("submit", async (ev) => {
     tipo: el("dlg-tipo").value,
     anotacoes: el("dlg-anotacoes").value,
   };
+  const original = editandoId ? esquemaAtual() : null;
+  if (original && dados.formacao !== original.formacao) {
+    const aviso =
+      `Trocar a formação de ${original.formacao} para ${dados.formacao} reposiciona ` +
+      "os dois times em todas as variações. Continuar?";
+    if (!confirm(aviso)) return;
+  }
+
   try {
     const salvo = editandoId
       ? await api.atualizarEsquema(editandoId, dados)
@@ -544,8 +571,15 @@ el("sel-papel").addEventListener("input", (ev) => {
   if (ficha) ficha.textContent = ev.target.value;
 });
 
+let filtroAnterior = filtroEl.value;
+
 filtroEl.addEventListener("change", () => {
-  if (!confirmarDescarte()) return;
+  // O select já mudou quando o change dispara; cancelar o descarte precisa desfazer isso.
+  if (!confirmarDescarte()) {
+    filtroEl.value = filtroAnterior;
+    return;
+  }
+  filtroAnterior = filtroEl.value;
   carregar();
 });
 
