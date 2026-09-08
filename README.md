@@ -109,17 +109,20 @@ disparar a mesma requisição duas vezes.
 ## Execução
 
 Suba a API primeiro (ver README do `exquematatico-api`; ela roda em `http://localhost:5001`).
-Depois, nesta pasta:
+Depois, **abra `index.html` com dois cliques**: o frontend roda direto do disco, sem servidor,
+sem extensão e sem build. A API libera CORS para qualquer origem, inclusive a origem `null`
+que o protocolo `file://` envia.
+
+Não há dependência para instalar.
+
+Se preferir servir por HTTP — para testar em outro dispositivo da rede, por exemplo — qualquer
+servidor estático funciona:
 
 ```powershell
 python -m http.server 8000      # Linux/macOS: python3 -m http.server 8000
 ```
 
-Abra `http://localhost:8000`. Qualquer servidor de arquivos estáticos serve; `python -m
-http.server` é só o mais à mão. Não há build nem dependência para instalar.
-
-Abrir `index.html` direto do disco (duplo clique) também funciona no Chrome e no Firefox,
-porque a API libera CORS para qualquer origem. Se o navegador bloquear, use o servidor acima.
+Nesse caso, abra `http://localhost:8000`.
 
 ## Configuração da API
 

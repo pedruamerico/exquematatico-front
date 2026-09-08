@@ -44,6 +44,7 @@ const estado = {
   ferramenta: "select",
   filtro: "",
   sujo: false,
+  persistido: null,
   alteracoes: 0,
   historico: {},
   inspectorAberto: false,
@@ -68,7 +69,12 @@ function mostrarToast(texto) {
 
 function marcarSujo(valor) {
   estado.sujo = valor;
-  if (!valor) estado.alteracoes = 0;
+  if (!valor) {
+    estado.alteracoes = 0;
+    // Foto do que está no servidor: é contra ela que desfazer decide se voltou
+    // ao estado salvo ou se afastou dele.
+    estado.persistido = estado.variacao ? JSON.stringify(estado.variacao) : null;
+  }
   dirtyEl.textContent = estado.alteracoes
     ? estado.alteracoes + (estado.alteracoes === 1 ? " alteração" : " alterações")
     : "";
@@ -143,7 +149,10 @@ function desfazer(direcao) {
   estado.variacao = origem.pop();
   estado.selecao = null;
   estado.alteracoes = Math.max(0, estado.alteracoes + (direcao === "desfazer" ? -1 : 1));
-  marcarSujo(h.passado.length > 0 || estado.alteracoes > 0);
+  // Estado salvo é comparação real contra o que foi persistido, não contagem:
+  // desfazer até o ponto gravado volta a marcar Salvo, e desfazer depois de
+  // salvar volta a marcar sujo.
+  marcarSujo(JSON.stringify(estado.variacao) !== estado.persistido);
   renderizarBoard();
 }
 
@@ -261,9 +270,12 @@ function criarItemLista(esquema) {
         excluir.title = "Excluir variação";
         excluir.addEventListener("click", async (ev) => {
           ev.stopPropagation();
-          if (v.id !== estado.variacaoId && !confirmarDescarte()) return;
+          // Excluir a variação aberta descarta a cópia de trabalho; excluir outra
+          // preserva o que está sujo aqui.
+          const ehAtual = v.id === estado.variacaoId;
+          if (ehAtual && !confirmarDescarte()) return;
           if (!confirm(`Excluir a variação "${v.nome}"?`)) return;
-          await executar(() => api.excluirVariacao(esquema.id, v.id));
+          await executar(() => api.excluirVariacao(esquema.id, v.id), null, !ehAtual);
         });
         botao.appendChild(excluir);
       } else if (v.id === estado.variacaoId && estado.sujo) {
@@ -1344,7 +1356,11 @@ menuEl.addEventListener("click", (ev) => {
   fecharMenu();
   const acao = botao.dataset.acao;
 
+  // Todas trocam ou recarregam o esquema aberto, então a cópia de trabalho suja
+  // seria descartada sem aviso.
   if (acao === "recarregar") { recarregarEsquema(); return; }
+  if (!confirmarDescarte()) return;
+
   if (acao === "editar") { abrirDialogoEsquema(esquemaAtual()); return; }
   if (acao === "duplicar") {
     executar(async () => {
@@ -1366,7 +1382,9 @@ menuEl.addEventListener("click", (ev) => {
 });
 
 el("salvar").addEventListener("click", salvarVariacao);
-el("novo").addEventListener("click", () => abrirDialogoEsquema(null));
+el("novo").addEventListener("click", () => {
+  if (confirmarDescarte()) abrirDialogoEsquema(null);
+});
 
 el("aba-contexto").addEventListener("click", () => { estado.aba = "contexto"; renderizarInspector(); });
 el("aba-banco").addEventListener("click", () => {
