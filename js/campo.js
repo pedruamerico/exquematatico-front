@@ -1,11 +1,9 @@
 // Geometria do campo e desenho da camada tática.
-// Coordenadas sempre percentuais 0-100; o SVG usa um viewBox fixo em unidades do
-// campo real (111 x 72 decímetros), então o traço não escala com o tamanho da tela.
+// O viewBox é fixo em unidades do campo real, então o traço não escala com a tela.
 const SVG_NS = "http://www.w3.org/2000/svg";
 const VB_LARGURA = 1110;
 const VB_ALTURA = 720;
 
-// Margem entre a linha de fundo e a borda do container, em percentual.
 const JOGO = { x0: 2.7, x1: 97.3, y0: 2.8, y1: 97.2 };
 
 const campo = {
@@ -24,8 +22,6 @@ const campo = {
     };
   },
 
-  // Converte o ponteiro em percentual do campo. É o que mantém o esquema
-  // proporcional: nenhuma posição é gravada em pixel.
   percentualDoPonteiro(elemento, evento) {
     const caixa = elemento.getBoundingClientRect();
     return {
@@ -41,8 +37,6 @@ const campo = {
   },
 };
 
-// Seta com ponta destacada: o corpo para antes do vértice para a ponta não engrossar
-// a linha. Devolve o path do corpo e os pontos do triângulo.
 function geometriaDaSeta(marcacao) {
   const p1 = campo.paraUnidades(marcacao.x1, marcacao.y1);
   const p2 = campo.paraUnidades(marcacao.x2, marcacao.y2);
@@ -75,8 +69,6 @@ function corDoTime(time) {
   return "var(--chalk)";
 }
 
-// Cada traço leva um contorno escuro por baixo: é o que mantém a notação legível
-// sobre as faixas de corte da grama e sobre as fichas.
 function desenharSeta(alvo, marcacao, indice, selecionada, aoSelecionar) {
   const g = geometriaDaSeta(marcacao);
   const passe = marcacao.tipo === "passe";

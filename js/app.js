@@ -30,8 +30,6 @@ const FERRAMENTAS = [
   { id: "texto", nome: "Nota tática", tecla: "T", grupo: 3 },
 ];
 
-// `variacao` é a cópia de trabalho: tudo que o usuário faz altera ela, e só o
-// Salvar manda para a API.
 const estado = {
   esquemas: [],
   esquemaId: null,
@@ -71,8 +69,6 @@ function marcarSujo(valor) {
   estado.sujo = valor;
   if (!valor) {
     estado.alteracoes = 0;
-    // Foto do que está no servidor: é contra ela que desfazer decide se voltou
-    // ao estado salvo ou se afastou dele.
     estado.persistido = estado.variacao ? JSON.stringify(estado.variacao) : null;
   }
   dirtyEl.textContent = estado.alteracoes
@@ -114,8 +110,6 @@ function chaveHistorico() {
   return estado.esquemaId + "::" + estado.variacaoId;
 }
 
-// Um gesto de arrasto grava UMA entrada: a foto de antes é tirada no pointerdown
-// e empilhada no pointerup, não a cada movimento.
 function empilhar(fotoAnterior) {
   const chave = chaveHistorico();
   const h = estado.historico[chave] || { passado: [], futuro: [] };
@@ -149,9 +143,6 @@ function desfazer(direcao) {
   estado.variacao = origem.pop();
   estado.selecao = null;
   estado.alteracoes = Math.max(0, estado.alteracoes + (direcao === "desfazer" ? -1 : 1));
-  // Estado salvo é comparação real contra o que foi persistido, não contagem:
-  // desfazer até o ponto gravado volta a marcar Salvo, e desfazer depois de
-  // salvar volta a marcar sujo.
   marcarSujo(JSON.stringify(estado.variacao) !== estado.persistido);
   renderizarBoard();
 }
@@ -185,8 +176,6 @@ function tamanhoFicha() {
   return Math.round(Math.min(38, Math.max(26, largura * 0.036)));
 }
 
-// Encosta em jogador ou bola dentro de 0.8 ficha. É assistência, não restrição:
-// soltar longe deixa a marcação livre.
 function alvoDeAncoragem(x, y) {
   const caixa = campoEl.getBoundingClientRect();
   const raio = (tamanhoFicha() * 0.8) / caixa.width * 100;
@@ -270,8 +259,6 @@ function criarItemLista(esquema) {
         excluir.title = "Excluir variação";
         excluir.addEventListener("click", async (ev) => {
           ev.stopPropagation();
-          // Excluir a variação aberta descarta a cópia de trabalho; excluir outra
-          // preserva o que está sujo aqui.
           const ehAtual = v.id === estado.variacaoId;
           if (ehAtual && !confirmarDescarte()) return;
           if (!confirm(`Excluir a variação "${v.nome}"?`)) return;
@@ -780,8 +767,9 @@ function renderizarInspector() {
 
 /* ---------- arrasto ---------- */
 
+// Sem setPointerCapture: o nó capturado é recriado a cada render.
 function capturar(ev) {
-  try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) { /* ponteiro já solto */ }
+  ev.preventDefault();
 }
 
 function iniciarArrastoFicha(ev, time, indice) {
@@ -856,8 +844,6 @@ function moverArrasto(p) {
   if (g.camada === "desenhos") {
     const d = v.desenhos[g.indice];
     if (g.sub === "mover") {
-      // A seta se move como bloco: o deslocamento é limitado pelo extremo que
-      // sairia primeiro, para o vetor não se deformar na borda.
       let dx = (p.x - g.dx) - d.x1;
       let dy = (p.y - g.dy) - d.y1;
       dx = Math.max(2.7 - Math.min(d.x1, d.x2), Math.min(97.3 - Math.max(d.x1, d.x2), dx));
@@ -883,7 +869,6 @@ function moverArrasto(p) {
       z.y = Number(Math.min(97.2 - z.altura, Math.max(2.8, p.y - g.dy)).toFixed(2));
       return;
     }
-    // Redimensiona a partir do canto oposto ao que está sendo arrastado.
     const fixoX = g.sub.includes("o") ? z.x + z.largura : z.x;
     const fixoY = g.sub.includes("n") ? z.y + z.altura : z.y;
     const limitado = campo.dentroDoGramado(p.x, p.y);
@@ -898,7 +883,8 @@ function moverArrasto(p) {
   }
 }
 
-campoEl.addEventListener("pointermove", (ev) => {
+// Na window, não no campo: soltar fora do campo precisa encerrar o gesto.
+window.addEventListener("pointermove", (ev) => {
   if (estado.arrasto) {
     moverArrasto(campo.percentualDoPonteiro(campoEl, ev));
     renderizarBoard();
@@ -929,8 +915,9 @@ function encerrarGesto() {
   if (estado.desenho) confirmarDesenho();
 }
 
-campoEl.addEventListener("pointerup", encerrarGesto);
-campoEl.addEventListener("pointercancel", encerrarGesto);
+window.addEventListener("pointerup", encerrarGesto);
+window.addEventListener("pointercancel", encerrarGesto);
+window.addEventListener("blur", encerrarGesto);
 
 /* ---------- criação de marcações ---------- */
 
@@ -978,7 +965,6 @@ function confirmarDesenho() {
   const d = estado.desenho;
   estado.desenho = null;
   estado.ancora = null;
-  // Traço muito curto é descartado: seria uma seta acidental de um clique.
   const longo = Math.abs(d.x2 - d.x1) > 1.2 || Math.abs(d.y2 - d.y1) > 1.8;
   if (!longo) { renderizarBoard(); return; }
 
@@ -1146,10 +1132,16 @@ async function executar(acao, aoTerminar, preservarSujo = false) {
   }
 }
 
+// Só a carga mais recente escreve no estado: respostas fora de ordem são descartadas.
+let cargaAtual = 0;
+
 async function carregar(preservarSujo = false) {
+  const carga = ++cargaAtual;
+  let recebidos;
   try {
-    estado.esquemas = await api.listarEsquemas(estado.filtro);
+    recebidos = await api.listarEsquemas(estado.filtro);
   } catch (e) {
+    if (carga !== cargaAtual) return;
     estadoListaEl.textContent = e.message;
     estadoListaEl.className = "estado erro";
     estadoListaEl.hidden = false;
@@ -1157,6 +1149,8 @@ async function carregar(preservarSujo = false) {
     boardEl.hidden = true;
     return;
   }
+  if (carga !== cargaAtual) return;
+  estado.esquemas = recebidos;
   estadoListaEl.className = "estado";
 
   const esquema = estado.esquemas.find((e) => e.id === estado.esquemaId) || estado.esquemas[0] || null;
@@ -1167,8 +1161,6 @@ async function carregar(preservarSujo = false) {
   const mesmaVariacao = variacao && variacao.id === estado.variacaoId;
 
   estado.variacaoId = variacao ? variacao.id : null;
-  // A cópia de trabalho suja sobrevive quando a variação aberta continua sendo a
-  // mesma: recarregar por causa de outra ação não pode engolir o que não foi salvo.
   if (!(preservarSujo && mesmaVariacao && estado.sujo)) {
     estado.variacao = variacao ? clonarVariacao(variacao) : null;
     estado.selecao = null;
@@ -1229,8 +1221,9 @@ async function salvarVariacao() {
 }
 
 async function recarregarEsquema() {
-  if (!estado.esquemaId) return;
+  if (!estado.esquemaId || ocupado) return;
   if (estado.sujo && !confirm("Há alterações não salvas. Descartar e buscar do servidor?")) return;
+  ocupado = true;
   try {
     const atual = await api.obterEsquema(estado.esquemaId);
     const indice = estado.esquemas.findIndex((e) => e.id === atual.id);
@@ -1245,6 +1238,8 @@ async function recarregarEsquema() {
     mostrarToast("Estado recarregado");
   } catch (e) {
     mostrarToast(e.message);
+  } finally {
+    ocupado = false;
   }
 }
 
@@ -1274,7 +1269,6 @@ function abrirDialogoEsquema(esquema) {
 }
 
 function abrirDialogoVariacao() {
-  // A variação nova passa a ser a aberta, descartando a cópia de trabalho atual.
   if (!confirmarDescarte()) return;
   el("var-nome").value = "";
   el("var-erro").textContent = "";
@@ -1302,6 +1296,8 @@ el("form-esquema").addEventListener("submit", async (ev) => {
     if (!confirm(aviso)) return;
   }
 
+  if (ocupado) return;
+  ocupado = true;
   try {
     const salvo = editandoId
       ? await api.atualizarEsquema(editandoId, dados)
@@ -1315,11 +1311,15 @@ el("form-esquema").addEventListener("submit", async (ev) => {
     mostrarToast(editandoId ? "Dados atualizados" : "Plano criado");
   } catch (e) {
     el("dlg-erro").textContent = e.message;
+  } finally {
+    ocupado = false;
   }
 });
 
 el("form-variacao").addEventListener("submit", async (ev) => {
   ev.preventDefault();
+  if (ocupado) return;
+  ocupado = true;
   try {
     const salvo = await api.criarVariacao(estado.esquemaId, { nome: el("var-nome").value.trim() });
     dialogoVariacao.close();
@@ -1331,6 +1331,8 @@ el("form-variacao").addEventListener("submit", async (ev) => {
     mostrarToast("Variação criada");
   } catch (e) {
     el("var-erro").textContent = e.message;
+  } finally {
+    ocupado = false;
   }
 });
 
@@ -1356,8 +1358,6 @@ menuEl.addEventListener("click", (ev) => {
   fecharMenu();
   const acao = botao.dataset.acao;
 
-  // Todas trocam ou recarregam o esquema aberto, então a cópia de trabalho suja
-  // seria descartada sem aviso.
   if (acao === "recarregar") { recarregarEsquema(); return; }
   if (!confirmarDescarte()) return;
 
