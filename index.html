@@ -8,24 +8,33 @@
 </head>
 <body>
   <header class="topo">
-    <h1>ExquemaTatico</h1>
+    <button id="gaveta" class="gaveta-btn" type="button" aria-label="Planos táticos">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+
+    <div class="marca">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path d="M9 1.4V16.6" stroke="#EDEFE7" stroke-width="1.4"/>
+        <circle cx="9" cy="9" r="4.1" stroke="#EDEFE7" stroke-width="1.4"/>
+        <circle cx="3.1" cy="5.4" r="1.5" fill="#F0B429"/>
+        <circle cx="3.1" cy="12.6" r="1.5" fill="#EDEFE7"/>
+        <circle cx="14.9" cy="9" r="1.5" fill="#EDEFE7"/>
+      </svg>
+      <h1>ExquemaTatico</h1>
+    </div>
+
     <div class="topo-acoes">
-      <span id="dirty" class="dirty"></span>
-      <label class="filtro">
-        Tipo
-        <select id="filtro-tipo">
-          <option value="">Todos</option>
-          <option value="ofensivo">Ofensivo</option>
-          <option value="defensivo">Defensivo</option>
-          <option value="bola_parada">Bola parada</option>
-        </select>
-      </label>
-      <button id="novo" class="btn btn-primario" type="button">Novo esquema</button>
+      <button id="novo" class="btn" type="button">Novo esquema</button>
     </div>
   </header>
 
   <main class="app">
-    <aside class="lateral">
+    <aside id="lateral" class="lateral">
+      <div class="lateral-topo">
+        <span class="lateral-titulo">Planos táticos</span>
+        <span id="contagem" class="contagem">0</span>
+      </div>
+      <div id="filtros" class="filtros"></div>
       <p id="estado-lista" class="estado">Carregando...</p>
       <nav id="lista" class="lista" hidden></nav>
     </aside>
@@ -33,107 +42,148 @@
     <section class="palco">
       <p id="estado-board" class="estado">Selecione um esquema à esquerda.</p>
 
-      <div id="board" class="board" hidden>
+      <div id="board" hidden style="display:contents">
         <div class="board-cabecalho">
-          <div>
-            <h2 id="board-titulo"></h2>
-            <p id="board-subtitulo" class="board-subtitulo"></p>
+          <div class="board-titulo-grupo">
+            <h2 id="board-titulo" class="board-titulo"></h2>
+            <span id="board-formacao" class="board-formacao"></span>
+            <span id="board-tipo" class="board-tipo"></span>
+            <span class="board-sep"></span>
+            <span id="board-variacao" class="board-variacao"></span>
           </div>
+
           <div class="board-acoes">
-            <button id="salvar" class="btn btn-primario" type="button">Salvar</button>
-            <button id="recarregar" class="btn" type="button" title="Descarta alterações e busca do servidor">Recarregar</button>
-            <button id="editar-dados" class="btn" type="button">Editar dados</button>
-            <button id="duplicar" class="btn" type="button">Duplicar</button>
-            <button id="excluir" class="btn btn-perigo" type="button">Excluir</button>
+            <span id="dirty" class="dirty"></span>
+            <button id="salvar" class="btn btn-primario" type="button" disabled>Salvo</button>
+            <div class="menu-wrap">
+              <button id="menu-btn" class="btn btn-icone" type="button" aria-label="Mais ações">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+              </button>
+              <div id="menu" class="menu" hidden>
+                <button type="button" data-acao="recarregar"><span>↻</span>Recarregar salvo</button>
+                <button type="button" data-acao="editar"><span>✎</span>Editar dados do plano</button>
+                <button type="button" data-acao="duplicar"><span>⧉</span>Duplicar plano</button>
+                <button type="button" class="perigo" data-acao="excluir"><span>✕</span>Excluir plano</button>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="board-corpo">
-          <div class="campo-wrap">
+          <div id="rail" class="rail"></div>
+
+          <div class="workspace">
             <div id="campo" class="campo">
+              <div class="linha gramado"></div>
+              <div class="terco" style="left:34.23%"></div>
+              <div class="terco" style="left:65.77%"></div>
               <div class="linha meio"></div>
               <div class="linha circulo"></div>
-              <div class="linha grande-area topo-area"></div>
-              <div class="linha pequena-area topo-area"></div>
-              <div class="linha penalti penalti-topo"></div>
-              <div class="linha grande-area base-area"></div>
-              <div class="linha pequena-area base-area"></div>
-              <div class="linha penalti penalti-base"></div>
+              <div class="linha ponto ponto-centro"></div>
+
+              <div class="linha grande-area area-esq"></div>
+              <div class="linha pequena-area area-esq"></div>
+              <div class="linha ponto penalti-esq"></div>
+              <div class="linha arco arco-esq"></div>
+              <div class="linha gol gol-esq"></div>
+
+              <div class="linha grande-area area-dir"></div>
+              <div class="linha pequena-area area-dir"></div>
+              <div class="linha ponto penalti-dir"></div>
+              <div class="linha arco arco-dir"></div>
+              <div class="linha gol gol-dir"></div>
+
+              <div class="linha canto canto-se"></div>
+              <div class="linha canto canto-sd"></div>
+              <div class="linha canto canto-ie"></div>
+              <div class="linha canto canto-id"></div>
+
+              <svg id="camada" class="camada camada-marcacoes" viewBox="0 0 1110 720" preserveAspectRatio="none"></svg>
+              <svg id="alcas" class="camada camada-alcas" viewBox="0 0 1110 720" preserveAspectRatio="none"></svg>
+
+              <div id="leitura" class="leitura"></div>
+              <div class="borda-suja"></div>
             </div>
           </div>
 
-          <div class="painel">
-            <section class="banco">
-              <h3>Banco <span class="time-cor time-casa"></span> Casa</h3>
-              <div id="banco-casa" class="banco-fichas"></div>
-              <button class="btn btn-mini" type="button" data-adicionar="casa">Adicionar jogador</button>
-            </section>
-
-            <section class="banco">
-              <h3>Banco <span class="time-cor time-visitante"></span> Adversário</h3>
-              <div id="banco-visitante" class="banco-fichas"></div>
-              <button class="btn btn-mini" type="button" data-adicionar="visitante">Adicionar jogador</button>
-            </section>
-
-            <section class="selecao" id="selecao" hidden>
-              <h3>Jogador selecionado</h3>
-              <div class="selecao-campos">
-                <label>Número
-                  <input id="sel-numero" type="number" min="1" max="99">
-                </label>
-                <label>Papel
-                  <input id="sel-papel" maxlength="12">
-                </label>
-              </div>
-              <div class="selecao-acoes">
-                <button id="sel-banco" class="btn btn-mini" type="button">Mandar ao banco</button>
-                <button id="sel-remover" class="btn btn-mini btn-perigo" type="button">Excluir</button>
-              </div>
-            </section>
-
-            <p id="mensagem" class="mensagem"></p>
+          <div class="calha">
+            <button id="abrir-contexto" type="button" aria-label="Abrir inspector">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 20v-1a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v1"/><circle cx="12" cy="7.5" r="3.6"/></svg>
+            </button>
+            <button id="abrir-banco" type="button" aria-label="Abrir banco">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+            </button>
           </div>
+
+          <aside id="inspector" class="inspector">
+            <div class="inspector-abas">
+              <button id="aba-contexto" class="aba aba-ativa" type="button">
+                <span id="aba-ponto" class="aba-ponto"></span><span id="aba-rotulo">Contexto</span>
+              </button>
+              <button id="aba-banco" class="aba" type="button">Banco</button>
+              <button id="fechar-inspector" class="inspector-fechar" type="button" aria-label="Recolher inspector">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+              </button>
+            </div>
+            <div id="inspector-corpo" class="inspector-corpo"></div>
+          </aside>
         </div>
       </div>
     </section>
   </main>
 
+  <div id="toast" class="toast"></div>
+
   <dialog id="dialogo" class="dialogo">
     <form id="form-esquema" method="dialog">
-      <h2 id="dialogo-titulo">Novo esquema</h2>
-      <label>Nome
-        <input id="dlg-nome" required>
-      </label>
-      <label>Formação
-        <input id="dlg-formacao" required placeholder="4-3-3">
-        <small>Soma 10 jogadores de linha. O goleiro não entra na conta.</small>
-      </label>
-      <label>Tipo
-        <select id="dlg-tipo">
-          <option value="ofensivo">Ofensivo</option>
-          <option value="defensivo">Defensivo</option>
-          <option value="bola_parada">Bola parada</option>
-        </select>
-      </label>
-      <label>Anotações
-        <textarea id="dlg-anotacoes"></textarea>
-      </label>
-      <p id="dlg-erro" class="mensagem erro"></p>
+      <div class="dialogo-cabecalho">
+        <h2 id="dialogo-titulo">Novo plano tático</h2>
+      </div>
+      <div class="dialogo-corpo">
+        <label>
+          <span class="rotulo">Nome do plano</span>
+          <input id="dlg-nome" type="text" required>
+        </label>
+        <div class="dialogo-linha">
+          <label class="campo-mono" style="flex:0 0 122px">
+            <span class="rotulo">Formação</span>
+            <input id="dlg-formacao" type="text" required placeholder="4-3-3">
+          </label>
+          <div style="flex:1 1 auto">
+            <span class="rotulo">Tipo</span>
+            <div id="dlg-tipo" class="segmento">
+              <button type="button" data-tipo="ofensivo">▲ Ofensivo</button>
+              <button type="button" data-tipo="defensivo">▼ Defensivo</button>
+              <button type="button" data-tipo="bola_parada">◆ Bola parada</button>
+            </div>
+          </div>
+        </div>
+        <label>
+          <span class="rotulo">Anotações</span>
+          <textarea id="dlg-anotacoes" rows="4"></textarea>
+        </label>
+        <p id="dlg-erro" class="mensagem erro"></p>
+      </div>
       <div class="dialogo-acoes">
         <button class="btn" type="button" data-fechar>Cancelar</button>
-        <button class="btn btn-primario" type="submit">Salvar</button>
+        <button id="dlg-salvar" class="btn btn-primario" type="submit">Criar</button>
       </div>
     </form>
   </dialog>
 
-  <dialog id="dialogo-variacao" class="dialogo">
+  <dialog id="dialogo-variacao" class="dialogo dialogo-estreito">
     <form id="form-variacao" method="dialog">
-      <h2>Nova variação</h2>
-      <label>Nome
-        <input id="var-nome" required placeholder="Saída de bola">
-        <small>Começa como cópia do Padrão. Reposicione e salve.</small>
-      </label>
-      <p id="var-erro" class="mensagem erro"></p>
+      <div class="dialogo-cabecalho">
+        <h2>Nova variação</h2>
+        <p class="dialogo-nota">Copia jogadores, bola e marcações da variação Padrão.</p>
+      </div>
+      <div class="dialogo-corpo">
+        <label>
+          <span class="rotulo">Nome</span>
+          <input id="var-nome" type="text" required placeholder="Pressão alta">
+        </label>
+        <p id="var-erro" class="mensagem erro"></p>
+      </div>
       <div class="dialogo-acoes">
         <button class="btn" type="button" data-fechar>Cancelar</button>
         <button class="btn btn-primario" type="submit">Criar</button>
@@ -142,6 +192,7 @@
   </dialog>
 
   <script src="js/api.js"></script>
+  <script src="js/campo.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
