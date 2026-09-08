@@ -428,6 +428,15 @@ function criarNota(anotacao, indice) {
     && estado.selecao.camada === "anotacoes" && estado.selecao.indice === indice;
   const nota = document.createElement("div");
   nota.className = "nota" + (selecionada ? " nota-ativa" : "");
+  nota.tabIndex = 0;
+  nota.setAttribute("role", "button");
+  nota.setAttribute("aria-label", "Nota: " + anotacao.texto);
+  nota.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter" || ev.key === " ") {
+      ev.preventDefault();
+      selecionar("anotacoes", indice);
+    }
+  });
   nota.style.left = anotacao.x + "%";
   nota.style.top = anotacao.y + "%";
   nota.textContent = anotacao.texto;
@@ -1078,6 +1087,38 @@ function moverBolaPorTeclado(ev) {
   });
 }
 
+function moverMarcacaoPorTeclado(ev) {
+  const passo = ev.shiftKey ? 4 : 1;
+  const dx = ev.key === "ArrowLeft" ? -passo : ev.key === "ArrowRight" ? passo : 0;
+  const dy = ev.key === "ArrowUp" ? -passo : ev.key === "ArrowDown" ? passo : 0;
+  if (!dx && !dy) return;
+
+  const { camada, indice } = estado.selecao;
+  const alvo = estado.variacao[camada][indice];
+  if (!alvo) return;
+
+  alterar(() => {
+    if (camada === "desenhos") {
+      const limite = (v, d) => campo.limitar(v + d, 0, 100);
+      const cabe = limite(alvo.x1, dx) - alvo.x1 === dx && limite(alvo.x2, dx) - alvo.x2 === dx
+        && limite(alvo.y1, dy) - alvo.y1 === dy && limite(alvo.y2, dy) - alvo.y2 === dy;
+      if (!cabe) return;
+      alvo.x1 = Number((alvo.x1 + dx).toFixed(2));
+      alvo.y1 = Number((alvo.y1 + dy).toFixed(2));
+      alvo.x2 = Number((alvo.x2 + dx).toFixed(2));
+      alvo.y2 = Number((alvo.y2 + dy).toFixed(2));
+    } else if (camada === "zonas") {
+      alvo.x = Number(campo.limitar(alvo.x + dx, 0, 100 - alvo.largura).toFixed(2));
+      alvo.y = Number(campo.limitar(alvo.y + dy, 0, 100 - alvo.altura).toFixed(2));
+    } else {
+      const p = campo.dentroDoGramado(alvo.x + dx, alvo.y + dy);
+      alvo.x = Number(p.x.toFixed(2));
+      alvo.y = Number(p.y.toFixed(2));
+    }
+    estado.selecao = { camada, indice };
+  });
+}
+
 window.addEventListener("keydown", (ev) => {
   const tag = (ev.target.tagName || "").toLowerCase();
   if (tag === "input" || tag === "textarea") return;
@@ -1107,6 +1148,12 @@ window.addEventListener("keydown", (ev) => {
       ev.preventDefault();
       removerMarcacao();
     }
+    return;
+  }
+  if (ev.key.startsWith("Arrow") && estado.selecao
+      && ["desenhos", "zonas", "anotacoes"].includes(estado.selecao.camada)) {
+    ev.preventDefault();
+    moverMarcacaoPorTeclado(ev);
     return;
   }
   const atalhos = { v: "select", b: "bola", m: "mov", p: "passe", z: "zona", t: "texto" };

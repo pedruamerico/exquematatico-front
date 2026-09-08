@@ -102,8 +102,16 @@ function desenharSeta(alvo, marcacao, indice, selecionada, aoSelecionar) {
   const alvoClique = campo.criar("path", {
     d: g.corpo, stroke: "transparent", "stroke-width": 16,
     "vector-effect": "non-scaling-stroke", fill: "none", class: "marcacao-alvo",
+    tabindex: "0", role: "button",
+    "aria-label": (passe ? "Linha de passe" : "Movimentação") + " " + (indice + 1),
   });
   alvoClique.addEventListener("pointerdown", (ev) => aoSelecionar(ev, "desenhos", indice));
+  alvoClique.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter" || ev.key === " ") {
+      ev.preventDefault();
+      aoSelecionar(ev, "desenhos", indice);
+    }
+  });
   grupo.appendChild(alvoClique);
   alvo.appendChild(grupo);
 }
@@ -120,9 +128,16 @@ function desenharZona(alvo, zona, indice, selecionada, aoSelecionar) {
     fill: cor, "fill-opacity": selecionada ? 0.2 : 0.13,
     stroke: cor, "stroke-width": selecionada ? 2 : 1.5,
     "stroke-dasharray": "7 6", "vector-effect": "non-scaling-stroke",
-    class: "marcacao-alvo",
+    class: "marcacao-alvo", tabindex: "0", role: "button",
+    "aria-label": "Zona " + (indice + 1),
   });
   retangulo.addEventListener("pointerdown", (ev) => aoSelecionar(ev, "zonas", indice));
+  retangulo.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter" || ev.key === " ") {
+      ev.preventDefault();
+      aoSelecionar(ev, "zonas", indice);
+    }
+  });
   grupo.appendChild(retangulo);
 
   if (selecionada) {

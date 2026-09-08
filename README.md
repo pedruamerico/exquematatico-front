@@ -66,8 +66,11 @@ A ponta de uma seta a menos de 0,8 ficha de um jogador ou da bola encosta nele �
 o anel de giz durante o desenho. É assistência, não restrição: soltar longe deixa a seta livre.
 
 `Esc` cancela o desenho em curso e volta para Selecionar. `Delete` remove a marcação
-selecionada, nunca um jogador. As setas do teclado movem a ficha em foco em 1 unidade, ou 4
-com `Shift`.
+selecionada, nunca um jogador.
+
+Tudo que se move no campo — fichas, bola, setas, zonas e notas — recebe foco por `Tab`,
+seleciona com `Enter` ou espaço e anda com as setas do teclado: 1 unidade, ou 4 com `Shift`.
+Nenhum atalho dispara com o foco num campo de texto.
 
 ### Histórico
 

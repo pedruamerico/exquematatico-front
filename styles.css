@@ -497,6 +497,8 @@ body.ocupado .btn, body.ocupado .ferramenta { pointer-events: none; opacity: 0.6
 .camada-marcacoes { z-index: 12; }
 .camada-alcas { z-index: 66; pointer-events: none; }
 .marcacao-alvo { cursor: pointer; }
+.marcacao-alvo:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.nota:focus-visible { outline: 2px solid var(--chalk); outline-offset: 3px; }
 .alca { pointer-events: auto; }
 
 .nota {
