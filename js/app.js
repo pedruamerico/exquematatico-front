@@ -480,6 +480,7 @@ function renderizarBoard() {
   if (!esquema || !estado.variacao) {
     boardEl.hidden = true;
     estadoBoardEl.hidden = false;
+    estadoBoardEl.className = "estado";
     estadoBoardEl.textContent = esquema
       ? "Este plano não tem variações."
       : "Selecione um plano à esquerda.";
@@ -1194,6 +1195,9 @@ async function carregar(preservarSujo = false) {
     estadoListaEl.hidden = false;
     listaEl.hidden = true;
     boardEl.hidden = true;
+    estadoBoardEl.hidden = false;
+    estadoBoardEl.className = "estado erro";
+    estadoBoardEl.textContent = e.message + " Suba a API e recarregue a página.";
     return;
   }
   if (carga !== cargaAtual) return;

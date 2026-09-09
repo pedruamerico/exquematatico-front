@@ -238,6 +238,11 @@ body.ocupado .btn, body.ocupado .ferramenta { pointer-events: none; opacity: 0.6
 /* ---- palco ---- */
 .palco { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 
+/* display:contents evita um nível de flex extra, mas faz o atributo hidden ser
+   ignorado: sem isto o campo continua desenhado com a API fora do ar. */
+#board { display: contents; }
+#board[hidden] { display: none; }
+
 .board-cabecalho {
   display: flex;
   align-items: center;
